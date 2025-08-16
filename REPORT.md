@@ -4,7 +4,7 @@
 
 ### System Components
 
-The GenAI Intern Agent is built using a modern, scalable architecture that combines FastAPI for API management, LangGraph for agentic workflows, and Cohere r plus for natural language processing tasks.
+The GenAI Intern Agent is built using a modern, scalable architecture that combines FastAPI for API management, LangGraph for agentic workflows, and OpenAI GPT-4o for natural language processing tasks.
 
 #### 1. FastAPI Application Layer
 - **Entry Point**: `src/main.py` - Configures the FastAPI application with CORS, logging, and lifecycle management
@@ -32,7 +32,7 @@ handle_error ← handle_error ← handle_error
 **Conditional Edges**: Smart error handling that allows the workflow to gracefully handle failures at any stage while providing meaningful fallback responses.
 
 #### 3. LLM Integration Architecture
-- **Service Layer**: `LLMService` abstracts Cohere API interactions
+- **Service Layer**: `LLMService` abstracts OpenAI API interactions
 - **Retry Logic**: Exponential backoff with configurable retry attempts
 - **Token Tracking**: Comprehensive monitoring of token usage across all API calls
 - **Prompt Optimization**: Carefully crafted prompts to minimize token consumption
@@ -47,7 +47,7 @@ Multi-component scoring system implemented in `ScoringService`:
 
 ### GPT-4o Selection
 
-**Chosen Model**: Cohere Command R+
+**Chosen Model**: OpenAI GPT-4o
 
 **Justification**:
 1. **Advanced Reasoning**: Superior performance on complex text analysis tasks
@@ -134,12 +134,11 @@ readability_score = max(0, min(100, flesch_score))
 #### 3. User Profile Score (Weight: 30%)
 **Method**: Reading level preference matching
 ```python
-# Reading level preferences
 beginner: 60-100 (prefer easier text)
 intermediate: 40-80 (moderate difficulty)
 advanced: 0-60 (prefer complex text)
 
-# Scoring logic
+
 if readability in preferred_range:
     user_score = 90.0
 else:
@@ -175,7 +174,7 @@ else:
 
 ### 2. Strategic Text Truncation
 ```python
-# Input text limits by task
+
 sentiment_analysis: 1000 characters
 topic_extraction: 1500 characters  
 keyword_generation: 1500 characters
@@ -188,19 +187,19 @@ draft_analysis: 1500 characters
 
 ### 4. Smart Retry Logic
 ```python
-def retry_with_exponential_backoff(
+async def retry_with_exponential_backoff(
     func: Callable,
     max_retries: int = 3,
     base_delay: float = 1.0
 ):
     for attempt in range(max_retries + 1):
         try:
-            return func()
+            return await func()
         except Exception as e:
             if attempt == max_retries:
                 raise e
             delay = base_delay * (2 ** attempt)
-            asyncio.sleep(delay)
+            await asyncio.sleep(delay)
 ```
 
 ### 5. Token Usage Monitoring
@@ -257,3 +256,254 @@ def retry_with_exponential_backoff(
 - Request timeout handling
 - Memory-efficient processing
 
+## Proposal: Agentic Content Tagging and Categorization
+
+### Feature Identification
+
+**Chosen Feature:** Automated Content Tagging and Categorization
+
+**Current Process:** 
+Currently, blog authors must manually complete several administrative tasks after writing their content:
+
+1. **Manual Category Assignment**: Authors read through their completed post and subjectively decide which primary category best fits their content from a predefined list (e.g., "Technology," "Legal Tech," "Marketing," "Case Studies")
+
+2. **Tag Brainstorming**: Authors manually brainstorm and generate relevant tags/keywords, often resulting in:
+   - Inconsistent tagging strategies across different authors
+   - Missed opportunities for SEO-optimized keywords
+   - Time-consuming deliberation over appropriate tags
+   - Subjective interpretation leading to poor discoverability
+
+3. **SEO Considerations**: Authors must manually consider search engine optimization factors when creating tags, which requires specialized knowledge many content creators lack
+
+This manual process is **time-consuming**, **subjective**, and **inconsistent**, leading to poor content organization and reduced discoverability across the platform.
+
+### Agent Design Proposal
+
+**Agent Logic:**
+The Automated Content Tagging and Categorization Agent is designed as a post-completion workflow that triggers when an author marks their blog post as "ready for publication." This agent leverages the existing LLM infrastructure to provide intelligent, consistent content organization.
+
+**Inputs:**
+- Final blog post text (complete article content)
+- Optional: Author-provided context or focus keywords
+- Predefined category taxonomy for the platform
+
+**Decision Logic:**
+
+```
+┌─────────────────────────────────────┐
+│          Blog Post Completed        │
+│         (Trigger Event)             │
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│     Content Analysis Agent          │
+│  ┌─────────────────────────────────┐│
+│  │  Multi-Task LLM Analysis:       ││
+│  │  1. Extract primary/secondary   ││
+│  │     subjects                    ││
+│  │  2. Generate SEO-friendly tags  ││
+│  │  3. Suggest primary category    ││
+│  │  4. Assess content complexity   ││
+│  └─────────────────────────────────┘│
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│       Validation & Scoring          │
+│  ┌─────────────────────────────────┐│
+│  │  • Confidence scoring           ││
+│  │  • Category fit assessment      ││
+│  │  • Tag relevance ranking        ││
+│  │  • SEO optimization check       ││
+│  └─────────────────────────────────┘│
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│      Human-in-the-Loop UI           │
+│  ┌─────────────────────────────────┐│
+│  │  Present suggestions to author: ││
+│  │  • Pre-filled category          ││
+│  │  • Ranked tag suggestions       ││
+│  │  • Confidence indicators        ││
+│  │  • Edit/approve interface       ││
+│  └─────────────────────────────────┘│
+└──────────────┬──────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────┐
+│         Final Publication           │
+│      (With approved tags)           │
+└─────────────────────────────────────┘
+```
+
+**Pseudo-code Implementation:**
+
+```python
+async def auto_tag_content(blog_post_text: str, predefined_categories: List[str]) -> TaggingResult:
+    
+    analysis_prompt = f"""
+    Analyze this blog post for categorization and tagging:
+    
+    Categories: {predefined_categories}
+    Content: {blog_post_text[:2000]}  # Limit for efficiency
+    
+    Return JSON:
+    {{
+        "primary_subject": "main topic",
+        "secondary_subjects": ["topic1", "topic2"],
+        "suggested_category": "best_fit_category",
+        "category_confidence": 0.95,
+        "seo_tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+        "content_complexity": "beginner|intermediate|advanced"
+    }}
+    """
+    
+    
+    analysis = await llm_service.analyze_with_retry(analysis_prompt)
+    
+    
+    validated_result = validate_suggestions(analysis, predefined_categories)
+    
+    
+    return TaggingResult(
+        suggested_category=validated_result.category,
+        confidence_score=validated_result.confidence,
+        suggested_tags=validated_result.tags[:7],  
+        reasoning=validated_result.reasoning
+    )
+```
+
+**Outputs:**
+```json
+{
+    "suggested_category": "Technology",
+    "category_confidence": 0.92,
+    "suggested_tags": [
+        "artificial intelligence",
+        "machine learning",
+        "automation",
+        "digital transformation",
+        "AI ethics",
+        "technology trends",
+        "innovation"
+    ],
+    "tag_confidence_scores": [0.95, 0.88, 0.85, 0.82, 0.79, 0.77, 0.75],
+    "content_complexity": "intermediate",
+    "reasoning": "Content focuses on AI applications with technical depth suitable for intermediate readers"
+}
+```
+
+**Integrations:**
+This agent leverages the existing system architecture:
+
+1. **LLM Service Integration**: Utilizes the existing `LLMService` with optimized prompts for content analysis
+2. **New API Endpoint**: `POST /api/internal/auto-tag` for internal system integration
+3. **Database Integration**: Stores tagging history for learning and improvement
+4. **UI Integration**: Provides structured data for frontend suggestion interface
+
+```python
+@router.post("/internal/auto-tag", response_model=TaggingResponse)
+async def auto_tag_content(
+    request: AutoTagRequest,
+    api_key: str = Depends(verify_internal_api_key) 
+):
+    result = await tagging_agent.process_content(
+        content=request.blog_content,
+        categories=request.available_categories
+    )
+    return TaggingResponse(**result)
+```
+
+### Impact Analysis
+
+**Expected Benefits:**
+
+1. **Time Savings:**
+   - **Quantified Impact**: Reduces post-publication administrative time from 10-15 minutes to 2-3 minutes per post
+   - **Scale Benefits**: For a platform with 100 posts/month, saves ~20 hours of author time monthly
+   - **Author Experience**: Allows content creators to focus on writing rather than administrative tasks
+
+2. **Content Consistency:**
+   - **Uniform Tagging Strategy**: Eliminates subjective variation between different authors
+   - **Platform-wide Standards**: Ensures consistent categorization criteria across all content
+   - **Improved Discoverability**: Better content organization leads to enhanced user navigation and content discovery
+   - **Analytics Benefits**: Consistent tagging enables better content performance analysis
+
+3. **SEO Improvement:**
+   - **Optimized Keywords**: AI-generated tags are optimized for search engine visibility
+   - **Semantic Understanding**: LLM can identify relevant keywords that authors might miss
+   - **Trend Awareness**: Can incorporate current trending topics and search terms
+   - **Long-tail Keywords**: Identifies specific, targeted keywords for niche content
+
+4. **Quality Assurance:**
+   - **Objective Analysis**: Removes human bias from categorization decisions
+   - **Comprehensive Coverage**: Ensures no relevant tags are overlooked
+   - **Platform Learning**: System improves over time based on content patterns
+
+**Potential Risks & Mitigation:**
+
+**Risk 1: Content Misinterpretation**
+- **Description**: The agent might misinterpret nuanced, highly specialized, or context-dependent content, leading to inappropriate categorization or irrelevant tags
+- **Mitigation Strategy**: 
+  - **Human-in-the-Loop Design**: Present AI suggestions as pre-filled recommendations in the UI, requiring author review and approval
+  - **Confidence Scoring**: Display confidence levels for each suggestion, highlighting low-confidence items for extra attention
+  - **Easy Override**: Provide intuitive interface for authors to edit, add, or remove suggestions
+  - **Feedback Loop**: Track author modifications to improve future suggestions
+
+**Risk 2: Over-reliance on Automation**
+- **Description**: Authors might become overly dependent on AI suggestions, potentially missing domain-specific nuances
+- **Mitigation Strategy**:
+  - **Educational Tooltips**: Provide guidance on reviewing and customizing AI suggestions
+  - **Suggestion Limits**: Cap the number of AI-generated tags to encourage human input
+  - **Manual Addition**: Always allow authors to add additional tags beyond AI suggestions
+
+**Risk 3: Category Drift**
+- **Description**: AI might gradually shift categorization patterns, leading to inconsistent historical organization
+- **Mitigation Strategy**:
+  - **Regular Auditing**: Periodic review of categorization patterns and accuracy
+  - **Version Control**: Track changes in categorization logic and maintain consistency
+  - **Manual Override Tracking**: Monitor when authors frequently override certain categories
+
+**Risk 4: Token Cost Escalation**
+- **Description**: Processing every blog post through LLM analysis could significantly increase operational costs
+- **Mitigation Strategy**:
+  - **Optimized Prompts**: Use the existing token-efficient prompt engineering approach
+  - **Content Truncation**: Analyze only the first 2000 characters for efficiency while maintaining accuracy
+  - **Caching Strategy**: Cache similar content analysis to avoid redundant processing
+  - **Batch Processing**: Process multiple posts together when possible
+
+**Implementation Phases:**
+
+**Phase 1: MVP Development (2-3 weeks)**
+- Basic categorization and tagging functionality
+- Simple human-in-the-loop interface
+- Integration with existing LLM service
+
+**Phase 2: Enhanced Intelligence (4-6 weeks)**
+- Confidence scoring implementation
+- SEO optimization features
+- Feedback loop integration
+
+**Phase 3: Advanced Features (6-8 weeks)**
+- Historical learning from author modifications
+- A/B testing framework for prompt optimization
+- Analytics dashboard for tagging performance
+
+This agentic content tagging feature represents a natural evolution of the existing blog support system, leveraging proven infrastructure while adding significant value to the content creation workflow.
+
+## Conclusion
+
+This implementation successfully delivers a production-ready agentic blog support system that balances functionality, performance, and cost efficiency. The combination of FastAPI's robust API framework, LangGraph's sophisticated workflow management, and optimized GPT-4o integration creates a system that is both powerful and economical to operate.
+
+The proposed Agentic Content Tagging and Categorization feature demonstrates the system's extensibility and potential for automating additional content management workflows while maintaining human oversight and quality control.
+
+Key achievements:
+- Complete agentic workflow using LangGraph
+- 70%+ reduction in token usage through prompt optimization
+- Robust error handling with exponential backoff
+- Multi-factor scoring system with semantic similarity
+- Comprehensive API documentation and testing
+- Production-ready architecture with proper logging and monitoring
+- Extensible design supporting future agentic features
