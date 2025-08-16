@@ -43,11 +43,11 @@ class BlogAgent:
         
         return workflow.compile()
     
-    async def _analyze_draft(self, state: BlogAgentState) -> BlogAgentState:
+    def _analyze_draft(self, state: BlogAgentState) -> BlogAgentState:
         """Analyze the draft text for quality and structure"""
         try:
             logger.info("Analyzing draft text")
-            analysis, tokens = await self.llm_service.analyze_draft(state["draft_text"])
+            analysis, tokens = self.llm_service.analyze_draft(state["draft_text"])
             state["analysis_results"] = analysis
             state["token_usage"] += tokens
             logger.info(f"Draft analysis completed. Tokens used: {tokens}")
@@ -63,14 +63,14 @@ class BlogAgent:
         
         return state
     
-    async def _generate_keywords(self, state: BlogAgentState) -> BlogAgentState:
+    def _generate_keywords(self, state: BlogAgentState) -> BlogAgentState:
         """Generate keyword recommendations"""
         if state.get("error"):
             return state
             
         try:
             logger.info("Generating keyword recommendations")
-            keywords, tokens = await self.llm_service.recommend_keywords(
+            keywords, tokens = self.llm_service.recommend_keywords(
                 state["draft_text"],
                 state["cursor_context"],
                 state["preferred_topics"],
@@ -87,7 +87,7 @@ class BlogAgent:
         
         return state
     
-    async def _calculate_scores(self, state: BlogAgentState) -> BlogAgentState:
+    def _calculate_scores(self, state: BlogAgentState) -> BlogAgentState:
         """Calculate readability and relevance scores"""
         if state.get("error"):
             return state
@@ -111,7 +111,7 @@ class BlogAgent:
         
         return state
     
-    async def _format_output(self, state: BlogAgentState) -> BlogAgentState:
+    def _format_output(self, state: BlogAgentState) -> BlogAgentState:
         """Format the final output"""
         logger.info("Formatting output")
         if not state.get("keywords"):
@@ -122,7 +122,7 @@ class BlogAgent:
             state["relevance_score"] = 50.0
         return state
     
-    async def _handle_error(self, state: BlogAgentState) -> BlogAgentState:
+    def _handle_error(self, state: BlogAgentState) -> BlogAgentState:
         """Handle errors by providing default values"""
         logger.warning(f"Handling error: {state.get('error', 'Unknown error')}")
         if not state.get("keywords"):
@@ -133,7 +133,7 @@ class BlogAgent:
             state["relevance_score"] = 50.0
         return state
     
-    async def process_recommendation_request(
+    def process_recommendation_request(
         self,
         draft_text: str,
         cursor_context: Optional[str],
@@ -162,7 +162,7 @@ class BlogAgent:
         
         # Run the workflow
         try:
-            final_state = await self.graph.ainvoke(state)
+            final_state = self.graph.ainvoke(state)
             
             return {
                 "suggested_keywords": final_state["keywords"],

@@ -188,19 +188,19 @@ draft_analysis: 1500 characters
 
 ### 4. Smart Retry Logic
 ```python
-async def retry_with_exponential_backoff(
+def retry_with_exponential_backoff(
     func: Callable,
     max_retries: int = 3,
     base_delay: float = 1.0
 ):
     for attempt in range(max_retries + 1):
         try:
-            return await func()
+            return func()
         except Exception as e:
             if attempt == max_retries:
                 raise e
             delay = base_delay * (2 ** attempt)
-            await asyncio.sleep(delay)
+            asyncio.sleep(delay)
 ```
 
 ### 5. Token Usage Monitoring

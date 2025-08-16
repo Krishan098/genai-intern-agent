@@ -23,7 +23,7 @@ def get_blog_agent():
     return _blog_agent
 
 @router.post("/analyze-blogs", response_model=List[blogAnalysisResponse])
-async def analyze_blogs(
+def analyze_blogs(
     request: analyzeBlogsRequest,
     api_key: str = Depends(verify_api_key)
 ) -> List[blogAnalysisResponse]:
@@ -37,9 +37,9 @@ async def analyze_blogs(
         for blog_text in request.blog_texts:
             if not blog_text.strip():
                 continue
-            sentiment, _ = await llm_service.analyze_sentiment(blog_text)
-            topics, _ = await llm_service.extract_topics(blog_text)
-            keywords, _ = await llm_service.generate_initial_keywords(blog_text)
+            sentiment, _ = llm_service.analyze_sentiment(blog_text)
+            topics, _ = llm_service.extract_topics(blog_text)
+            keywords, _ = llm_service.generate_initial_keywords(blog_text)
             
             results.append(blogAnalysisResponse(
                 sentiment_metrics={
@@ -58,7 +58,7 @@ async def analyze_blogs(
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 @router.post("/recommend-keywords", response_model=keywordRecommendationResponse)
-async def recommend_keywords(
+def recommend_keywords(
     request: recommendKeywordsRequest,
     api_key: str = Depends(verify_api_key)
 ) -> keywordRecommendationResponse:
@@ -67,7 +67,7 @@ async def recommend_keywords(
     """
     try:
         blog_agent = get_blog_agent()
-        result = await blog_agent.process_recommendation_request(
+        result =blog_agent.process_recommendation_request(
             draft_text=request.draft_text,
             cursor_context=request.cursor_context,
             preferred_topics=request.user_profile.preferred_topics,

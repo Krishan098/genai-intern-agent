@@ -8,7 +8,7 @@ class blogAnalysisResponse(BaseModel):
     initial_keywords:list[str]
 class keywordRecommendationResponse(BaseModel):
     suggested_keywords:list[str]
-    readibility_score:float
+    readability_score:float
     relevance_score:float
     token_usage: int
     

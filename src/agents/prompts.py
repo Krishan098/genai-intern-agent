@@ -4,7 +4,7 @@ Templates are designed to minimize token usage while maintaining accuracy.
 """
 
 SENTIMENT_ANALYSIS_PROMPT = """Analyze sentiment of this blog text. Return JSON only:
-{"polarity": float(-1 to 1), "subjectivity": float(0 to 1)}
+{{"polarity": float(-1 to 1), "subjectivity": float(0 to 1)}}
 
 Text: {text}"""
 
