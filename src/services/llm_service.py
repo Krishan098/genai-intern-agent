@@ -19,11 +19,11 @@ from openai import AsyncOpenAI
 
 class LLMService:
     def __init__(self):
-        # Try both sync and async Cohere clients
+        
         try:
             self.cohere_client = cohere.ClientV2(api_key=settings.COHERE_API_KEY)
         except Exception:
-            # Fallback to sync client
+        
             self.cohere_client = cohere.Client(api_key=settings.COHERE_API_KEY)
         
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
@@ -34,29 +34,29 @@ class LLMService:
         """Clean and extract JSON from LLM response"""
         cleaned = response.strip()
         
-        # Remove markdown code blocks
+        
         if "```json" in cleaned:
             cleaned = cleaned.split("```json")[1].split("```")[0].strip()
         elif "```" in cleaned:
             cleaned = cleaned.split("```")[1].split("```")[0].strip()
         
-        # Find JSON boundaries
+        
         start_idx = cleaned.find('{')
         end_idx = cleaned.rfind('}')
         
         if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
             cleaned = cleaned[start_idx:end_idx+1]
         elif '[' in cleaned and ']' in cleaned:
-            # Handle array responses
+        
             start_idx = cleaned.find('[')
             end_idx = cleaned.rfind(']')
             if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
                 cleaned = cleaned[start_idx:end_idx+1]
         
-        # Fix common JSON formatting issues
-        cleaned = re.sub(r'(\w+):', r'"\1":', cleaned)  # Add quotes to keys
-        cleaned = re.sub(r':\s*([^",\[\]{}\d\-][^",\[\]{}]*)', r': "\1"', cleaned)  # Add quotes to string values
-        cleaned = re.sub(r'"\s*"', r'""', cleaned)  # Fix empty strings
+        
+        cleaned = re.sub(r'(\w+):', r'"\1":', cleaned)  
+        cleaned = re.sub(r':\s*([^",\[\]{}\d\-][^",\[\]{}]*)', r': "\1"', cleaned)  
+        cleaned = re.sub(r'"\s*"', r'""', cleaned)  
         
         return cleaned
 
@@ -69,7 +69,6 @@ class LLMService:
         except json.JSONDecodeError as e:
             logger.warning(f"JSON decode failed: {e}. Trying manual extraction...")
             
-            # Manual extraction as fallback
             if isinstance(fallback_value, dict):
                 return self.extract_dict_values(response, fallback_value)
             elif isinstance(fallback_value, list):
@@ -84,7 +83,7 @@ class LLMService:
         """Extract dictionary values using regex"""
         result = fallback.copy()
         
-        # Extract polarity
+        
         polarity_match = re.search(r'["\']?polarity["\']?\s*:?\s*(-?\d*\.?\d+)', response, re.IGNORECASE)
         if polarity_match:
             try:
@@ -92,7 +91,7 @@ class LLMService:
             except ValueError:
                 pass
         
-        # Extract subjectivity
+        
         subjectivity_match = re.search(r'["\']?subjectivity["\']?\s*:?\s*(-?\d*\.?\d+)', response, re.IGNORECASE)
         if subjectivity_match:
             try:
@@ -100,7 +99,7 @@ class LLMService:
             except ValueError:
                 pass
         
-        # Extract quality_score
+        
         quality_match = re.search(r'["\']?quality_score["\']?\s*:?\s*(-?\d*\.?\d+)', response, re.IGNORECASE)
         if quality_match:
             try:
@@ -112,23 +111,23 @@ class LLMService:
 
     def extract_list_values(self, response: str, fallback: list) -> list:
         """Extract list values using regex"""
-        # Try to find array-like patterns
+        
         array_matches = re.findall(r'\[([^\]]+)\]', response)
         if array_matches:
             array_content = array_matches[0]
-            # Extract quoted strings
+        
             items = re.findall(r'["\']([^"\']+)["\']', array_content)
             if items:
                 return items
             
-            # Extract comma-separated values
+        
             items = [item.strip().strip('"\'') for item in array_content.split(',')]
             return [item for item in items if item]
         
-        # Try to find quoted strings in the response
+        
         quoted_items = re.findall(r'["\']([^"\']{2,})["\']', response)
         if quoted_items and len(quoted_items) > 1:
-            return quoted_items[:7]  # Limit to reasonable number
+            return quoted_items[:7]  
         
         return fallback
 
@@ -146,7 +145,7 @@ class LLMService:
     def make_cohere_api_call(self, prompt: str, max_tokens: int = None) -> tuple[str, int]:
         def cohere_call():
             try:
-                # Try ClientV2 first
+                
                 if hasattr(self.cohere_client, 'chat'):
                     try:
                         res = self.cohere_client.chat(
@@ -156,7 +155,7 @@ class LLMService:
                             temperature=settings.TEMPERATURE
                         )
                         
-                        # Extract content from ClientV2 response
+                        
                         content = None
                         if hasattr(res, 'message') and hasattr(res.message, 'content'):
                             if isinstance(res.message.content, list) and len(res.message.content) > 0:
@@ -164,7 +163,7 @@ class LLMService:
                             else:
                                 content = str(res.message.content)
                         
-                        # Extract tokens
+                    
                         tokens = 0
                         if hasattr(res, 'usage') and hasattr(res.usage, 'tokens'):
                             tokens = getattr(res.usage.tokens, 'output_tokens', 0)
@@ -175,7 +174,7 @@ class LLMService:
                         logger.warning(f"ClientV2 failed: {v2_error}")
                         raise v2_error
                 
-                # Fallback to sync client
+                
                 import asyncio
                 res = asyncio.get_event_loop().run_in_executor(
                     None,
@@ -206,11 +205,8 @@ class LLMService:
         
         fallback_sentiment = {"polarity": 0.0, "subjectivity": 0.5}
         sentiment = self.parse_json_safely(response, fallback_sentiment)
-        
-        # Ensure correct structure and types
         if not isinstance(sentiment, dict):
             sentiment = fallback_sentiment
-
         sentiment = {
             "polarity": float(sentiment.get("polarity", 0.0)),
             "subjectivity": float(sentiment.get("subjectivity", 0.5))

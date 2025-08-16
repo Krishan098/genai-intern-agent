@@ -54,7 +54,6 @@ class BlogAgent:
         except Exception as e:
             logger.error(f"Error analyzing draft: {e}")
             state["error"] = f"Draft analysis failed: {str(e)}"
-            # Set default values
             state["analysis_results"] = {
                 "quality_score": 0.5,
                 "structure_notes": "Unable to analyze",
@@ -142,7 +141,6 @@ class BlogAgent:
         historical_data: Optional[dict] = None
     ) -> dict[str, Any]:
         """Process a keyword recommendation request through the agent workflow"""
-        # Initialize state
         state: BlogAgentState = {
             "draft_text": draft_text,
             "cursor_context": cursor_context,
@@ -157,10 +155,8 @@ class BlogAgent:
             "error": None
         }
         
-        # Reset token counter
         self.llm_service.reset_token_counter()
         
-        # Run the workflow
         try:
             final_state = self.graph.ainvoke(state)
             
