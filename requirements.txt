@@ -1,0 +1,11 @@
+fastapi[standard]
+langgraph
+langchain
+pydantic
+python-jose
+passlib
+sentence-transformers
+textstat
+numpy 
+python-dotenv
+httpx
