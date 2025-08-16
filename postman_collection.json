@@ -1,0 +1,54 @@
+{
+  "info": {
+    "name": "Blog Analysis API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Analyze Blogs",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer genai-intern"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/analyze-blogs",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "analyze-blogs"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"blog_texts\": [\n    \"AI is transforming our world in amazing ways.\",\n    \"Climate change poses serious risks to global economies and ecosystems.\",\n    \"Remote work has redefined productivity and employee well-being.\",\n    \"Healthcare innovation is accelerating with AI-driven diagnostics.\",\n    \"Blockchain is reshaping trust and transparency in finance.\"\n  ]\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "Sample Response",
+          "originalRequest": {
+            "method": "POST",
+            "url": {
+              "raw": "http://localhost:8000/api/analyze-blogs"
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "[\n  {\n    \"sentiment_metrics\": {\n      \"polarity\": 0.6,\n      \"subjectivity\": 0.8\n    },\n    \"key_topics\": [\n      \"AI Transformation\",\n      \"AI Applications\",\n      \"AI Impact\"\n    ],\n    \"initial_keywords\": [\n      \"AI Transformation\",\n      \"AI Innovation\",\n      \"Artificial Intelligence\",\n      \"AI Applications\",\n      \"AI Impact\",\n      \"AI Future\"\n    ]\n  },\n  {\n    \"sentiment_metrics\": {\n      \"polarity\": -0.8,\n      \"subjectivity\": 0.6\n    },\n    \"key_topics\": [\n      \"climate change\",\n      \"global economies\",\n      \"ecosystems\"\n    ],\n    \"initial_keywords\": [\n      \"Climate Change\",\n      \"Global Economies\",\n      \"Ecosystems\",\n      \"Risks\",\n      \"Environment\",\n      \"Sustainability\"\n    ]\n  },\n  {\n    \"sentiment_metrics\": {\n      \"polarity\": 0.5,\n      \"subjectivity\": 0.8\n    },\n    \"key_topics\": [\n      \"Remote Work\",\n      \"Productivity\",\n      \"Employee Well-being\"\n    ],\n    \"initial_keywords\": [\n      \"remote work\",\n      \"productivity\",\n      \"employee well-being\",\n      \"work-from-home\",\n      \"virtual collaboration\"\n    ]\n  },\n  {\n    \"sentiment_metrics\": {\n      \"polarity\": 0.2,\n      \"subjectivity\": 0.4\n    },\n    \"key_topics\": [\n      \"Healthcare\",\n      \"AI-driven diagnostics\",\n      \"Innovation\"\n    ],\n    \"initial_keywords\": [\n      \"Healthcare Innovation\",\n      \"AI-driven diagnostics\",\n      \"Medical Technology\",\n      \"Deep Learning\",\n      \"Healthcare Tech\",\n      \"AI in Healthcare\"\n    ]\n  },\n  {\n    \"sentiment_metrics\": {\n      \"polarity\": 0.2,\n      \"subjectivity\": 0.6\n    },\n    \"key_topics\": [\n      \"Blockchain\",\n      \"Trust\",\n      \"Transparency\",\n      \"Finance\"\n    ],\n    \"initial_keywords\": [\n      \"Blockchain\",\n      \"Finance\",\n      \"Trust\",\n      \"Transparency\",\n      \"Decentralization\"\n    ]\n  }\n]"
+        }
+      ]
+    }
+  ]
+}
