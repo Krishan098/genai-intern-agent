@@ -4,9 +4,8 @@ load_dotenv()
 import cohere
 class Settings:
     COHERE_API_KEY=os.getenv("COHERE_API_KEY")    
-    OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
     API_KEY=os.getenv("API_KEY","genai-intern")
-    MODEL_NAME='gemini-2.0-flash'
+    MODEL_NAME='command-r-plus'
     MAX_TOKENS=2000
     TEMPERATURE=0.3
     MAX_RETRIES=3

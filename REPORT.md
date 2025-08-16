@@ -4,7 +4,7 @@
 
 ### System Components
 
-The GenAI Intern Agent is built using a modern, scalable architecture that combines FastAPI for API management, LangGraph for agentic workflows, and OpenAI GPT-4o for natural language processing tasks.
+The GenAI Intern Agent is built using a modern, scalable architecture that combines FastAPI for API management, LangGraph for agentic workflows, and Cohere r plus for natural language processing tasks.
 
 #### 1. FastAPI Application Layer
 - **Entry Point**: `src/main.py` - Configures the FastAPI application with CORS, logging, and lifecycle management
@@ -32,7 +32,7 @@ handle_error ← handle_error ← handle_error
 **Conditional Edges**: Smart error handling that allows the workflow to gracefully handle failures at any stage while providing meaningful fallback responses.
 
 #### 3. LLM Integration Architecture
-- **Service Layer**: `LLMService` abstracts OpenAI API interactions
+- **Service Layer**: `LLMService` abstracts Cohere API interactions
 - **Retry Logic**: Exponential backoff with configurable retry attempts
 - **Token Tracking**: Comprehensive monitoring of token usage across all API calls
 - **Prompt Optimization**: Carefully crafted prompts to minimize token consumption
@@ -47,7 +47,7 @@ Multi-component scoring system implemented in `ScoringService`:
 
 ### GPT-4o Selection
 
-**Chosen Model**: OpenAI GPT-4o
+**Chosen Model**: Cohere Command R+
 
 **Justification**:
 1. **Advanced Reasoning**: Superior performance on complex text analysis tasks
@@ -257,14 +257,3 @@ def retry_with_exponential_backoff(
 - Request timeout handling
 - Memory-efficient processing
 
-## Conclusion
-
-This implementation successfully delivers a production-ready agentic blog support system that balances functionality, performance, and cost efficiency. The combination of FastAPI's robust API framework, LangGraph's sophisticated workflow management, and optimized GPT-4o integration creates a system that is both powerful and economical to operate.
-
-Key achievements:
-- Complete agentic workflow using LangGraph
-- 70%+ reduction in token usage through prompt optimization
-- Robust error handling with exponential backoff
-- Multi-factor scoring system with semantic similarity
-- Comprehensive API documentation and testing
-- Production-ready architecture with proper logging and monitoring

@@ -15,18 +15,12 @@ from src.agents.prompts import (
 
 logger = logging.getLogger(__name__)
 
-from openai import AsyncOpenAI
+
 
 class LLMService:
     def __init__(self):
         
-        try:
-            self.cohere_client = cohere.ClientV2(api_key=settings.COHERE_API_KEY)
-        except Exception:
-        
-            self.cohere_client = cohere.Client(api_key=settings.COHERE_API_KEY)
-        
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.cohere_client = cohere.ClientV2(api_key=settings.COHERE_API_KEY)
         self.system_message = "You periodically analyze the evolving blog and refine suggestions by referencing patterns learned from the past blog data. You should suggest new keywords inline or highlight weak sections."
         self.total_tokens = 0
 
@@ -131,17 +125,6 @@ class LLMService:
         
         return fallback
 
-    def make_openai_api_call(self, prompt: str, max_tokens: int = None) -> tuple[str, int]:
-        def gpt_call():
-            response = self.client.chat.completions.create(
-                model=settings.MODEL_NAME,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=max_tokens or settings.MAX_TOKENS,
-                temperature=settings.TEMPERATURE
-            )
-            return response.choices[0].message.content, response.usage.total_tokens
-        return retry_with_exponential_backoff(gpt_call)
-
     def make_cohere_api_call(self, prompt: str, max_tokens: int = None) -> tuple[str, int]:
         def cohere_call():
             try:
@@ -200,7 +183,9 @@ class LLMService:
     def analyze_sentiment(self, text: str) -> tuple[dict[str, float], int]:
         prompt = SENTIMENT_ANALYSIS_PROMPT.format(text=text[:1000])
         response, tokens = self.make_cohere_api_call(prompt, max_tokens=50)
-        
+        response, tokens = self.make_cohere_api_call(prompt, max_tokens=50)
+        logger.info(f"Raw Cohere response: {response}")
+
         logger.debug(f"Raw sentiment response: {repr(response)}")
         
         fallback_sentiment = {"polarity": 0.0, "subjectivity": 0.5}

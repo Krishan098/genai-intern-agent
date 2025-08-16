@@ -15,7 +15,7 @@ An agentic blog support system built with FastAPI, LangGraph, and OpenAI GPT-4o 
 ### Prerequisites
 
 - Python 3.9+
-- OpenAI API key
+- Cohere API key
 
 ### Installation
 
@@ -111,7 +111,6 @@ Default API key: `genai-intern-2024`
 
 - **FastAPI**: Modern web framework for building APIs
 - **LangGraph**: Stateful agent workflow orchestration
-- **OpenAI GPT-4o**: Advanced language model for NLP tasks
 - **Sentence Transformers**: Semantic similarity calculations
 - **TextStat**: Readability analysis
 
@@ -145,20 +144,8 @@ isort src/
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| OPENAI_API_KEY | OpenAI API key | Required |
+| COHERE_API_KEY | COHERE API key | Required |
 | API_KEY | API authentication key | genai-intern-2024 |
-| MODEL_NAME | OpenAI model name | gpt-4o |
 | MAX_TOKENS | Max tokens per request | 2000 |
 | TEMPERATURE | Model temperature | 0.3 |
 
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
