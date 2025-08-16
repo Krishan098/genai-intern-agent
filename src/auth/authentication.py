@@ -4,6 +4,6 @@ from src.utils.config import settings
 security=HTTPBearer()
 def verify_api_key(credentials:HTTPAuthorizationCredentials=Security(security)):
     if credentials.credentials!=settings.API_KEY:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,deetail="Invalid API Key")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid API Key")
     return credentials.credentials
     
